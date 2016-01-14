@@ -155,7 +155,7 @@ findTags = concatMap go . tails . map norm . TL.words
 
     isIssue issue = not (TL.null issue) && TL.head issue == '#'
 
-    norm = TL.filter $ \c -> c `elem` "#:_-" || isDigit c || isLetter c
+    norm = TL.filter $ \c -> c `elem` ("#:_-" :: [Char])|| isDigit c || isLetter c
 
 processCommitTags :: T.Text -> Sh ()
 processCommitTags msg =
