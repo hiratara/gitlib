@@ -68,8 +68,8 @@ options :: Parser Options
 options = Options
     <$> switch (short 'v' <> long "verbose" <> help "Display info")
     <*> switch (short 'n' <> long "dry-run" <> help "Dry run")
-    <*> argument (Just . Just) (value Nothing)
-    <*> many (argument Just hidden)
+    <*> argument (Just <$> str) (value Nothing)
+    <*> many (argument str hidden)
 
 volume :: Options -> Sh a -> Sh a
 volume opts = if verbose opts then verbosely else silently
