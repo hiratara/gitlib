@@ -25,6 +25,7 @@ Library
         , bytestring
         , containers
         , lens                 >= 4.0
+        , lens-action          >= 0.2
         , tagged
         , template-haskell
         , text

@@ -10,6 +10,7 @@ module Git.Lens where
 
 import           Control.Applicative
 import           Control.Lens
+import           Control.Lens.Action (Effective, act)
 import           Control.Monad
 import           Data.ByteString
 import           Data.Function
@@ -23,46 +24,46 @@ import           Prelude hiding (FilePath)
 
 makeClassy_ ''Commit
 
-type RepoGetter m a b =
+type RepoGetter r' m a b =
     forall (p :: * -> * -> *) (f :: * -> *) r.
-        (Conjoined p, Effective m r f, Repository m)
+        (Conjoined p, Effective m r f, MonadGit r' m)
         => p b (f b) -> p a (f a)
 
-_oid :: Repository m => RepoGetter m Text (Tagged o (Oid m))
+_oid :: MonadGit r' m => RepoGetter r' m Text (Tagged o (Oid r'))
 _oid = act parseObjOid
 
-_commit :: Repository m => RepoGetter m (CommitOid m) (Commit m)
+_commit :: MonadGit r' m => RepoGetter r' m (CommitOid r') (Commit r')
 _commit = act lookupCommit
 
-_tree :: Repository m => RepoGetter m (Commit m) (Tree m)
+_tree :: MonadGit r' m => RepoGetter r' m (Commit r') (Tree r')
 _tree = act $ lookupTree . commitTree
 
-_ref :: Repository m => RepoGetter m Text (Maybe (Commit m))
+_ref :: MonadGit r' m => RepoGetter r' m Text (Maybe (Commit r'))
 _ref = act $ resolveReference
            >=> maybe (return Nothing) (fmap Just . lookupCommit . Tagged)
 
-_rtree :: Repository m => RepoGetter m (TreeOid m) (Tree m)
+_rtree :: MonadGit r' m => RepoGetter r' m (TreeOid r') (Tree r')
 _rtree = act lookupTree
 
-_rblob :: Repository m => RepoGetter m (BlobOid m) (Blob m)
+_rblob :: MonadGit r' m => RepoGetter r' m (BlobOid r') (Blob r' m)
 _rblob = act lookupBlob
 
-_entry :: (Conjoined p, Effective m r f, Repository m)
-       => TreeFilePath -> p (Maybe (TreeEntry m)) (f (Maybe (TreeEntry m)))
-       -> p (Tree m) (f (Tree m))
+_entry :: (Conjoined p, Effective m r f, MonadGit r' m)
+       => TreeFilePath -> p (Maybe (TreeEntry r')) (f (Maybe (TreeEntry r')))
+       -> p (Tree r') (f (Tree r'))
 _entry n = act $ treeEntry ?? n
 
-_entries :: Repository m
-         => RepoGetter m (Tree m) (HashMap TreeFilePath (TreeEntry m))
+_entries :: MonadGit r' m
+         => RepoGetter r' m (Tree r') (HashMap TreeFilePath (TreeEntry r'))
 _entries = act $ fmap HashMap.fromList . listTreeEntries
 
-_centries :: Repository m
-          => RepoGetter m (Commit m) (HashMap TreeFilePath (TreeEntry m))
+_centries :: MonadGit r' m
+          => RepoGetter r' m (Commit r') (HashMap TreeFilePath (TreeEntry r'))
 _centries = _tree._entries
 
-_blob :: (Conjoined p, Effective m r f, Repository m)
+_blob :: (Conjoined p, Effective m r f, MonadGit r' m)
       => TreeFilePath -> p (Maybe ByteString) (f (Maybe ByteString))
-      -> p (Tree m) (f (Tree m))
+      -> p (Tree r') (f (Tree r'))
 _blob n = act (treeEntry ?? n) . act f
   where f (Just (BlobEntry oid _)) = Just <$> catBlob oid
         f _ = return Nothing
