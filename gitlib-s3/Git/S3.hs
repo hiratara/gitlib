@@ -474,7 +474,7 @@ awsRetry :: (MonadIO m, Transaction r a)
          -> ResourceT m (Response (ResponseMetadata a) a)
 awsRetry cfg svcfg mgr r =
     transResourceT liftIO $
-        retrying def (has _Left . responseResult) $ aws cfg svcfg mgr r
+        retrying def (const $ return . has _Left . responseResult) $ (const $ aws cfg svcfg mgr r)
 
 listBucketS3 :: MonadS3 m => OdbS3Details -> ResourceT m [Text]
 listBucketS3 dets = do
@@ -540,7 +540,7 @@ getFileS3 dets filepath range = do
         Just (Left e) -> throwM $ Git.BackendError e
         Just (Right r) ->
             transResourceT liftIO $
-                return $ ResumableSource (sourceLazy r) (return ())
+                return $ newResumableSource (sourceLazy r)
         _ -> do
             lgDebug $ "Aws.getObject: " ++ show filepath ++ " " ++ show range
             res <- awsRetry (configuration dets) (s3configuration dets)

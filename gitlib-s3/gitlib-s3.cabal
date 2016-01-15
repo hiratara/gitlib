@@ -57,7 +57,7 @@ Library
     , bifunctors           >= 3.2.0.1
     , binary               >= 0.5.1.0
     , bytestring           >= 0.9.2.1
-    , conduit              >= 1.1.0
+    , conduit              >= 1.2.0
     , conduit-combinators  >= 0.2.4
     , data-default         >= 0.5.1
     , directory            >= 1.1.0.2
@@ -68,7 +68,7 @@ Library
     , lifted-base          >= 0.2.0.2
     , monad-control        >= 1.0 && < 1.1
     , resourcet            >= 1.1.2.2
-    , retry                >= 0.2.0.0
+    , retry                >= 0.7
     , split                >= 0.2
     , stm                  >= 2.4
     , text                 >= 0.11.2
